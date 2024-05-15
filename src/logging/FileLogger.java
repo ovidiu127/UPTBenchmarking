@@ -1,10 +1,13 @@
 package logging;
 
+import timing.TimeUnit;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class FileLogger implements ILogger {
+public class FileLogger implements ILogger
+{
     private FileWriter fw;
 
     public FileLogger(String path){
@@ -23,7 +26,8 @@ public class FileLogger implements ILogger {
         }
     }
 
-    public void write(String s){
+    public void write(String s)
+    {
         try{
             fw.write(s + "\n");
         } catch (IOException e){
@@ -49,5 +53,58 @@ public class FileLogger implements ILogger {
         } catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void writeTime(long value, TimeUnit unit)
+    {
+        long internationalSystem = value;
+
+        switch (unit)
+        {
+            case TimeUnit.Mili:
+            {
+                internationalSystem = (value / 1000000);
+
+                break;
+            }
+
+            case TimeUnit.Micro:
+            {
+                internationalSystem = (value / 1000);
+                break;
+            }
+
+            case TimeUnit.Second:
+            {
+                internationalSystem = (value / 1000000000);
+
+                break;
+            }
+        }
+
+        try
+        {
+            fw.write(internationalSystem + "");
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void writeTime(String str, long value, TimeUnit unit)
+    {
+        try
+        {
+            fw.write(str);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        this.writeTime(value, unit);
     }
 }

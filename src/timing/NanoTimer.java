@@ -4,7 +4,7 @@ public class NanoTimer implements ITimer {
     private long time,elapsed;
     private boolean paused,started;
 
-    NanoTimer(){
+    public NanoTimer(){
         paused = false;
         started = false;
     }
