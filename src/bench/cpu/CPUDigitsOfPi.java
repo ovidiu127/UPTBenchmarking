@@ -2,6 +2,8 @@ package bench.cpu;
 
 import bench.IBenchmark;
 
+import java.text.NumberFormat;
+
 public class CPUDigitsOfPi implements IBenchmark
 {
     public void run()
@@ -18,20 +20,36 @@ public class CPUDigitsOfPi implements IBenchmark
         {
             case 0:
             {
-//                computePiMagically();
+                NumberFormat numberFormat = NumberFormat.getInstance();
+
+                numberFormat.setMinimumFractionDigits(10);
+
+                System.out.println("Pi value via Monte Carlo: " +
+                        numberFormat.format(PiComputation.MonteCarlo(1000000000L)));
+
                 break;
             }
 
             case 1:
             {
-//                computePiByGuessing();
+                NumberFormat numberFormat = NumberFormat.getInstance();
+
+                numberFormat.setMinimumFractionDigits(10);
+
+                System.out.println("Pi value via Gregory Liebniz: " +
+                        numberFormat.format(PiComputation.GregoryLiebniz(1000000000L)));
 
                 break;
             }
 
             case 2:
             {
-//                computePiUsingMaths();
+                NumberFormat numberFormat = NumberFormat.getInstance();
+
+                numberFormat.setMinimumFractionDigits(10);
+
+                System.out.println("Pi value via Gauss Uraganul: " +
+                        numberFormat.format(PiComputation.GaussLegandar(0.01)));
 
                 break;
             }

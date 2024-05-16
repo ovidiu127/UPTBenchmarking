@@ -1,7 +1,7 @@
 package testbench;
 
-import bench.DemoBenchmark;
 import bench.IBenchmark;
+import bench.cpu.CPUDigitsOfPi;
 import logging.ConsoleLogger;
 import logging.ILogger;
 import timing.ITimer;
@@ -16,22 +16,17 @@ public class TestCPUDigitsOfPi
 
         ILogger log = new ConsoleLogger();
 
-        IBenchmark bench = new DemoBenchmark();
+        IBenchmark bench = new CPUDigitsOfPi();
 
-        final int workload = 10000;
+        bench.initialize();
 
-        bench.initialize(workload);
+        timer.start();
 
-        for(int i = 0; i < 12; ++ i)
-        {
-            timer.start();
+        bench.run(2);
 
-            bench.run();
+        long time = timer.stop();
 
-            long time = timer.stop();
-
-            log.writeTime("Run ", time, TimeUnit.Nano);
-        }
+        log.writeTime("Run ", time, TimeUnit.Nano);
 
         log.write("Finished in: ", timer.stop());
 
