@@ -78,4 +78,10 @@ public class DemoBenchmark implements IBenchmark
 
         System.out.println("You got canceled");
     }
+    @Override
+    public void warmUP()
+    {
+
+    }
+
 }
