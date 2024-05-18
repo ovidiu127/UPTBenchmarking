@@ -58,7 +58,7 @@ public class ConsoleLogger implements ILogger {
     @Override
     public void writeTime(String str, long value, TimeUnit unit)
     {
-        System.out.println(str);
+        System.out.print(str);
 
         this.writeTime(value, unit);
     }

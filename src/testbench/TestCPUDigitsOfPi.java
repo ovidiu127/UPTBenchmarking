@@ -19,16 +19,39 @@ public class TestCPUDigitsOfPi
         IBenchmark bench = new CPUDigitsOfPi();
 
         bench.initialize();
+        bench.warmUP();
+
+        timer.start();
+
+        bench.run(0);
+
+        long time = timer.stop();
+
+        log.writeTime("Run ", time, TimeUnit.Nano);
+        log.write("Test 0 Finished in: ", timer.stop());
+
+        timer.start();
+
+        bench.run(1);
+
+        time = timer.stop();
+
+        log.writeTime("Run ", time, TimeUnit.Nano);
+
+        log.write("Test 1 Finished in: ", timer.stop());
+
+        log.close();
+
 
         timer.start();
 
         bench.run(2);
 
-        long time = timer.stop();
+        time = timer.stop();
 
         log.writeTime("Run ", time, TimeUnit.Nano);
 
-        log.write("Finished in: ", timer.stop());
+        log.write("Test 2 Finished in: ", timer.stop());
 
         log.close();
 

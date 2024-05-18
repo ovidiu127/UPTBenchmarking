@@ -76,6 +76,8 @@ public class CPUDigitsOfPi implements IBenchmark
 
     public void warmUP()
     {
-
+        run(0);
+        run(1);
+        run(2);
     }
 }
