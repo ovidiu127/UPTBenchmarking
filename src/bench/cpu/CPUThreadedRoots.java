@@ -8,7 +8,7 @@ public class CPUThreadedRoots implements IBenchmark
 {
     private double result;
     private int size;
-    private boolean running;
+    private boolean running = false;
 
     private int nThreads;
 
@@ -110,7 +110,7 @@ public class CPUThreadedRoots implements IBenchmark
             // compute Newtonian square root on each number from i = 'from' to 'to', and also check 'running'
             // save (+=) each computed square root in the local 'result' variable
             // extra: send 'result' back to main thread and sum up with all results
-            for(int i = from; i  <= to; ++ i)
+            for(int i = from; i  <= to && running; ++ i)
             {
                 this.result += getNewtonian(i);
             }
