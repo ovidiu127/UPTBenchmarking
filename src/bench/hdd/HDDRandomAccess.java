@@ -3,12 +3,13 @@ import timing.ITimer;
 import timing.NanoTimer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Random;
 
 import timing.NanoTimer;
-import timing.Timer;
+import timing.ITimer;
 import bench.IBenchmark;
 
 public class HDDRandomAccess implements IBenchmark {
@@ -83,7 +84,7 @@ public class HDDRandomAccess implements IBenchmark {
                 else if (String.valueOf(param[1]).toLowerCase().equals("ft")) {
 
                     int ios = new RandomAccess().randomReadFixedTime(PATH,
-                            bufferSize, time);
+                            bufferSize, runtime);
                     result = ios + " I/Os per second ["
                             + (ios * bufferSize / 1024 / 1024) + " MB, "
                             + 1.0 * (ios * bufferSize / 1024 / 1024) / runtime * 1000 + "MB/s]";
@@ -130,12 +131,9 @@ public class HDDRandomAccess implements IBenchmark {
          * Reads data from random positions into a fixed size buffer from a
          * given file using RandomAccessFile
          *
-         * @param filePath
-         *            Full path to file on disk
-         * @param bufferSize
-         *            Size of byte buffer to read at each step
-         * @param toRead
-         *            Number of steps to repeat random read
+         * @param filePath   Full path to file on disk
+         * @param bufferSize Size of byte buffer to read at each step
+         * @param toRead     Number of steps to repeat random read
          * @return Amount of time needed to finish given reads in milliseconds
          * @throws IOException
          */
@@ -156,8 +154,7 @@ public class HDDRandomAccess implements IBenchmark {
 
             Random position = new Random();
 
-            while (counter++ < toRead)
-            {
+            while (counter++ < toRead) {
                 // go to random spot in file
 
                 int randomPos = position.nextInt() % bufferSize;
@@ -177,12 +174,9 @@ public class HDDRandomAccess implements IBenchmark {
          * given file using RandomAccessFile for one second, or any other given
          * time
          *
-         * @param filePath
-         *            Full path to file on disk
-         * @param bufferSize
-         *            Size of byte buffer to read at each step
-         * @param millis
-         *            Total time to read from file
+         * @param filePath   Full path to file on disk
+         * @param bufferSize Size of byte buffer to read at each step
+         * @param millis     Total time to read from file
          * @return Number of reads in the given amount of time
          * @throws IOException
          */
@@ -201,9 +195,8 @@ public class HDDRandomAccess implements IBenchmark {
 
             long now = System.nanoTime();
             // read for a fixed amount of time
-            while (/*elapsed time*/ < /*expected millis*/) {
+            while (now < millis) {
                 // go to random spot in file
-
                 int randomPosition = position.nextInt() % bufferSize;
 
                 file.seek(randomPosition);
@@ -211,22 +204,22 @@ public class HDDRandomAccess implements IBenchmark {
                 // read the bytes into buffer
                 file.read(bytes);
 
+                now++;
+
                 counter++;
             }
 
             file.close();
+
             return counter;
         }
 
         /**
          * Read data from a file at a specific position
          *
-         * @param filePath
-         *            Path to file
-         * @param position
-         *            Position in file
-         * @param size
-         *            Number of bytes to reads from the given position
+         * @param filePath Path to file
+         * @param position Position in file
+         * @param size     Number of bytes to reads from the given position
          * @return Data that was read
          * @throws IOException
          */
@@ -244,21 +237,62 @@ public class HDDRandomAccess implements IBenchmark {
         /**
          * Write data to a file at a specific position
          *
-         * @param filePath
-         *            Path to file
-         * @param data
-         *            Data to be written
-         * @param position
-         *            Start position in file
+         * @param filePath Path to file
+         * @param data     Data to be written
+         * @param position Start position in file
          * @throws IOException
          */
         public void writeToFile(String filePath, String data, int position)
                 throws IOException {
-
             RandomAccessFile file = new RandomAccessFile(filePath, "rw");
             file.seek(position);
             file.write(data.getBytes());
             file.close();
+        }
+
+        public long randomWriteFixedSize(String filePath, String data, int toWrite)
+        {
+            RandomAccessFile file;
+            try {
+                file = new RandomAccessFile(filePath, "w");
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            long fileSize = 0;
+            try {
+                fileSize = file.getChannel().size();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            int counter = 0;
+
+            ITimer timer = new NanoTimer();
+
+            timer.start();
+
+            Random position = new Random();
+
+            while (counter < toWrite)
+            {
+                int randomPos = position.nextInt() % data.length();
+
+                try {
+                    file.seek(randomPos);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
+                    file.write(data.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                ++counter;
+            }
+            return timer.stop() / 100000;
         }
     }
 
