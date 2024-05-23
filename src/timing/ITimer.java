@@ -8,4 +8,6 @@ public interface ITimer {
     void resume();
 
     long pause();
+
+    long getTime();
 }

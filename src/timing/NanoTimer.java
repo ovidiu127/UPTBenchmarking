@@ -38,4 +38,10 @@ public class NanoTimer implements ITimer {
         paused = true;
         return stop();
     }
+
+    @Override
+    public long getTime()
+    {
+        return System.nanoTime() - this.time;
+    }
 }

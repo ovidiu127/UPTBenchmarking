@@ -6,15 +6,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.Timer;
 
 import timing.NanoTimer;
 import timing.ITimer;
 import bench.IBenchmark;
 
-public class HDDRandomAccess implements IBenchmark {
+public class HDDRandomAccess implements IBenchmark
+{
 
-    private final static String PATH = "D:\\test.raf";
+    private final static String PATH = "C:\\Users\\rares\\Github\\uptbenchmarking\\input\\f1.txt";
     private String result;
 
     @Override
@@ -79,6 +82,8 @@ public class HDDRandomAccess implements IBenchmark {
                     result = steps + " random reads in " + timeMs + " ms ["
                             + (steps * bufferSize / 1024 / 1024) + " MB, "
                             + 1.0 * (steps * bufferSize / 1024 / 1024) / timeMs * 1000 + "MB/s]";
+
+                    System.out.println(result);
                 }
                 // read for a fixed time amount and measure time
                 else if (String.valueOf(param[1]).toLowerCase().equals("ft")) {
@@ -88,6 +93,8 @@ public class HDDRandomAccess implements IBenchmark {
                     result = ios + " I/Os per second ["
                             + (ios * bufferSize / 1024 / 1024) + " MB, "
                             + 1.0 * (ios * bufferSize / 1024 / 1024) / runtime * 1000 + "MB/s]";
+
+                    System.out.println(result);
                 } else
                     throw new UnsupportedOperationException("Read option \""
                             + String.valueOf(param[1])
@@ -95,9 +102,52 @@ public class HDDRandomAccess implements IBenchmark {
 
             }
             // write benchmark
-            else if (String.valueOf(param[0]).toLowerCase().equals("w")) {
+            else if (String.valueOf(param[0]).toLowerCase().equals("w"))
+            {
                 // your code here: implement all cases for param[[0]: fs, ft, other
-            } else
+
+                int bufferSize = (int) param[2];
+
+                String data;
+
+                Random rand = new Random();
+
+                byte[] bytes = new byte[bufferSize];
+
+                rand.nextBytes(bytes);
+
+                data = Arrays.toString(bytes);
+
+                if (String.valueOf(param[1]).toLowerCase().equals("fs"))
+                {
+
+                    long timeMs = new RandomAccess().randomWriteFixedSize(PATH,
+                            data, steps);
+
+                    result = steps + " random reads in " + timeMs + " ms ["
+                            + (steps * bufferSize / 1024 / 1024) + " MB, "
+                            + 1.0 * (steps * bufferSize / 1024 / 1024) / timeMs * 1000 + "MB/s]";
+
+                    System.out.println(result);
+                }
+                // write for a fixed time amount and measure time
+                else if (String.valueOf(param[1]).toLowerCase().equals("ft"))
+                {
+                    long msdos = new RandomAccess().randomWriteFixedTimee(PATH,
+                            data, runtime);
+
+                    result = msdos + " I/Os per second ["
+                            + (msdos * bufferSize / 1024 / 1024) + " MB, "
+                            + 1.0 * (msdos * bufferSize / 1024 / 1024) / runtime * 1000 + "MB/s]";
+
+                    System.out.println(result);
+                }
+                else
+                    throw new UnsupportedOperationException("Read option \""
+                            + String.valueOf(param[1])
+                            + "\" is not implemented");
+            }
+            else
                 throw new UnsupportedOperationException("Benchmark option \""
                         + String.valueOf(param[0]) + "\" is not implemented");
 
@@ -157,7 +207,7 @@ public class HDDRandomAccess implements IBenchmark {
             while (counter++ < toRead) {
                 // go to random spot in file
 
-                int randomPos = position.nextInt() % bufferSize;
+                int randomPos = Math.abs(position.nextInt()) % bufferSize;
 
                 file.seek(randomPos);
                 // read the bytes into buffer
@@ -193,21 +243,24 @@ public class HDDRandomAccess implements IBenchmark {
 
             Random position = new Random();
 
-            long now = System.nanoTime();
+            ITimer timer = new NanoTimer();
+
+            timer.start();
+
             // read for a fixed amount of time
-            while (now < millis) {
+            while (timer.getTime() < millis * 1000L) {
                 // go to random spot in file
-                int randomPosition = position.nextInt() % bufferSize;
+                int randomPosition = Math.abs(position.nextInt()) % bufferSize;
 
                 file.seek(randomPosition);
 
                 // read the bytes into buffer
                 file.read(bytes);
 
-                now++;
-
                 counter++;
             }
+
+            timer.stop();
 
             file.close();
 
@@ -254,7 +307,7 @@ public class HDDRandomAccess implements IBenchmark {
         {
             RandomAccessFile file;
             try {
-                file = new RandomAccessFile(filePath, "w");
+                file = new RandomAccessFile(filePath, "rw");
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -276,7 +329,47 @@ public class HDDRandomAccess implements IBenchmark {
 
             while (counter < toWrite)
             {
-                int randomPos = position.nextInt() % data.length();
+                int randomPos = Math.abs(position.nextInt()) % data.length();
+
+                try {
+                    file.seek(randomPos);
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
+                    file.write(data.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                ++counter;
+            }
+            return timer.stop() / 100000;
+        }
+
+        public long randomWriteFixedTimee(String filePath, String data,
+                                         long milis) throws IOException {
+            // file to read from
+            RandomAccessFile file;
+            try {
+                file = new RandomAccessFile(filePath, "rw");
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            long writtenSize = 0;
+
+            ITimer timer = new NanoTimer();
+
+            Random position = new Random();
+
+            timer.start();
+
+            while (timer.getTime() < milis * 1000)
+            {
+                int randomPos = Math.abs(position.nextInt()) % data.length();
 
                 try {
                     file.seek(randomPos);
@@ -290,9 +383,12 @@ public class HDDRandomAccess implements IBenchmark {
                     throw new RuntimeException(e);
                 }
 
-                ++counter;
+                writtenSize += data.length();
             }
-            return timer.stop() / 100000;
+
+            file.close();
+
+            return writtenSize;
         }
     }
 

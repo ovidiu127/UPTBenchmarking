@@ -38,4 +38,11 @@ public class MillisTimer implements ITimer {
         paused = true;
         return stop();
     }
+
+    @Override
+    public long getTime()
+    {
+        return 0;
+    }
+
 }
